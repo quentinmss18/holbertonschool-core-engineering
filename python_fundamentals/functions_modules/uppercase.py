@@ -15,6 +15,6 @@ def uppercase(str):
         else:
             # Si ce n'est pas une minuscule, on garde le caractère tel quel
             result += char
-    
-    # On imprime le résultat final suivi d'une nouvelle ligne
-    print("{}".format(result))
+
+    # On imprime le )
+~                                                           
