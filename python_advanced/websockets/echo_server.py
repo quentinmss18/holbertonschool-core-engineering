@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 A minimal asynchronous WebSocket server that echoes back any received message.
 """
