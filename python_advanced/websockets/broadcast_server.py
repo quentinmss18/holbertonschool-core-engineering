@@ -1,58 +1,50 @@
 #!/usr/bin/env python3
 """
-Broadcast WebSocket server implementation distributing messages to all active clients.
+WebSocket Server Module with broadcast capability.
 """
 
 import asyncio
 import websockets
 from websockets.exceptions import ConnectionClosed
 
-# Global set to keep track of active client connections
-connected_clients = set()
-
-
-async def broadcast(message):
-    """
-    Sends the broadcast message to all currently connected clients.
-    """
-    if connected_clients:
-        # Create send tasks for all connected clients to run them concurrently
-        send_tasks = [
-            asyncio.create_task(client.send(message))
-            for client in connected_clients
-        ]
-        # Wait for all send tasks to finish, ignoring individual errors
-        # if a client disconnects mid-broadcast
-        await asyncio.gather(*send_tasks, return_exceptions=True)
+# Set to keep track of active client connections
+CLIENTS = set()
 
 
 async def connection_handler(websocket):
     """
-    Handles individual client connections. Tracks connections globally,
-    receives messages, and broadcasts them to everyone prefixed with 'B:'.
+    Handles a client connection. Registers the client, listens
+    for messages, and broadcasts them with a prefix of 'B:'.
+    Unregisters the client upon disconnection.
     """
-    # Register the connection
-    connected_clients.add(websocket)
+    # Register the active client
+    CLIENTS.add(websocket)
     try:
         async for message in websocket:
-            # Broadcast the received message to all connected clients
-            await broadcast(f"B:{message}")
+            # Prepare the broadcast message
+            broadcast_msg = f"B:{message}"
+            # Send to all currently connected clients
+            if CLIENTS:
+                await asyncio.gather(
+                    *[client.send(broadcast_msg) for client in CLIENTS]
+                )
     except ConnectionClosed:
-        # Gracefully handle individual client disconnections
         pass
     finally:
-        # Clean up connection reference on disconnect
-        connected_clients.discard(websocket)
+        # Unregister client upon disconnection
+        CLIENTS.remove(websocket)
 
 
 async def main():
     """
-    Starts the asynchronous WebSocket server on 127.0.0.1:8765.
+    Main entry point to start the broadcast server.
     """
-    async with websockets.serve(connection_handler, "127.0.0.1", 8765):
-        # Keeps the server running indefinitely
-        await asyncio.Future()
+    async with websockets.serve(connection_handler, "localhost", 8765):
+        await asyncio.Future()  # run forever
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
