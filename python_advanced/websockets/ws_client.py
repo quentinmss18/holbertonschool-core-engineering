@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 """
-A minimal asynchronous WebSocket client that connects to an echo server,
-sends a single message, receives the response, and returns it.
+WebSocket Client Module
+Connects to an echo server, sends a message, and prints the response.
 """
 
+import os
 import asyncio
 import websockets
 
 
-async def connect_and_send(uri, text):
+async def connect_and_send(uri: str, text: str) -> str:
     """
-    Connects to the given WebSocket URI, sends a single text message,
-    waits for a single response from the server, and returns it.
-    The connection is cleanly closed upon exiting the context manager.
+    Connects to the WebSocket server at uri, sends text,
+    receives the response, and returns it.
     """
     async with websockets.connect(uri) as websocket:
         await websocket.send(text)
         response = await websocket.recv()
-        return str(response)
+        return response
 
 
 async def main():
     """
-    Main function to execute the client logic standalone.
-    Connects to ws://localhost:8765, sends 'Hello WebSocket',
-    and prints the output with no final newline.
+    Main entry point for the script.
+    Retrieves the URI from the environment variable 'WS_URI'
+    (falling back to 'ws://localhost:8765' if not set).
     """
-    uri = "ws://localhost:8765"
+    uri = os.getenv("WS_URI", "ws://localhost:8765")
     message = "Hello WebSocket"
     
+    # Connect, send, and fetch the response
     response = await connect_and_send(uri, message)
+    
+    # Print exactly as received with no final newline
     print(response, end="")
 
 
