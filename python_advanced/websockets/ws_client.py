@@ -23,10 +23,10 @@ async def connect_and_send(uri, text):
 async def main():
     """
     Main function to execute the client logic standalone.
-    Connects to ws://127.0.0.1:8765, sends 'Hello WebSocket',
+    Connects to ws://localhost:8765, sends 'Hello WebSocket',
     and prints the output with no final newline.
     """
-    uri = "ws://127.0.0.1:8765"
+    uri = "ws://localhost:8765"
     message = "Hello WebSocket"
     
     response = await connect_and_send(uri, message)
