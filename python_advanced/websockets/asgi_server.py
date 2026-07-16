@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ASGI web server application using Starlette and Uvicorn.
-Handles both HTTP web pages and an asynchronous WebSocket echo endpoint.
+ASGI Server Module using Starlette.
+Handles HTTP requests on / and WebSocket connections on /ws.
 """
 
 from starlette.applications import Starlette
@@ -12,29 +12,26 @@ from starlette.websockets import WebSocketDisconnect
 
 async def homepage(request):
     """
-    HTTP route handler that serves a simple HTML web page.
+    Serves a simple HTML page at the root URL.
     """
     return HTMLResponse("<h1>WebSocket App</h1>")
 
 
 async def websocket_endpoint(websocket):
     """
-    WebSocket route handler that accepts a connection and continuously 
-    echoes back any incoming text messages to the sender.
+    Handles incoming WebSocket connections at /ws.
+    Accepts connection and echoes received messages back to the sender.
     """
     await websocket.accept()
     try:
         while True:
-            # Continuously wait for text messages from the client
             message = await websocket.receive_text()
-            # Echo the exact message back to the sender
             await websocket.send_text(message)
     except WebSocketDisconnect:
-        # Cleanly handle client disconnection states
         pass
 
 
-# Starlette application instantiation with defined routing configurations
+# Starlette application instance with defined routes
 app = Starlette(routes=[
     Route("/", homepage),
     WebSocketRoute("/ws", websocket_endpoint),
